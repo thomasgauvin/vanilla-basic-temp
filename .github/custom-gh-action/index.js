@@ -19,9 +19,12 @@ async function run() {
       core.info(`Using Docker image cache: ${cachedPath}`);
       await exec.exec(`docker load -i ${cachedImagePath}`);
     }
+    else{
+        // Pull the Docker image
+        await exec.exec(`docker pull ${imageName}:${imageTag}`);
+    }
 
-    // Pull the Docker image
-    await exec.exec(`docker pull ${imageName}:${imageTag}`);
+
 
     // Save the Docker image to a path
     await exec.exec(`docker save -o /tmp/${imageName}.tar ${imageName}:${imageTag}`);
