@@ -13,15 +13,11 @@ async function run() {
     const cacheKey = `docker-${imageName}-${imageTag}`;
 
     // Check if the Docker image is already cached
-    const cachedPath = await cache.restoreCache([`/tmp/${imageName}`], cacheKey);
+    const path = `/tmp/${imageName}.tar`;
+    const cachedPath = await cache.restoreCache([path], cacheKey);
     if (cachedPath && cachedPath.length) {
       core.info(`Using Docker image cache: ${cachedPath}`);
-      const cachedImagePath = `${cachedPath}/${imageName}.tar`;
-      if (fs.existsSync(cachedImagePath)) {
-        // Load the Docker image from the cached file
-        await exec.exec(`docker load -i ${cachedImagePath}`);
-        return;
-      }
+      await exec.exec(`docker load -i ${cachedImagePath}`);
     }
 
     // Pull the Docker image
