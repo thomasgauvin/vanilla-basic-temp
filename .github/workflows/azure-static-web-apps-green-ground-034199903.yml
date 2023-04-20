@@ -41,7 +41,6 @@ jobs:
           SKIP_APP_BUILD: true
           SKIP_API_BUILD: true
           APP_LOCATION: src # swa: SWA_CLI_APP_LOCATION
-          CONFIG_FILE_LOCATION: src
           PRODUCTION_BRANCH: main
           VERBOSE: true # swa: SWA_CLI_DEBUG
 
