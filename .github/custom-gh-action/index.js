@@ -1,6 +1,7 @@
 const core = require('@actions/core');
 const exec = require('@actions/exec');
 const cache = require('@actions/cache');
+const fs = require('fs');
 
 async function run() {
   try {
@@ -15,19 +16,22 @@ async function run() {
     const cachedPath = await cache.restoreCache([`/tmp/${imageName}`], cacheKey);
     if (cachedPath && cachedPath.length) {
       core.info(`Using Docker image cache: ${cachedPath}`);
-    } else {
-      // Pull the Docker image
-      await exec.exec(`docker pull ${imageName}:${imageTag}`);
-
-      // Save the Docker image to a path
-      await exec.exec(`docker save -o /tmp/${imageName} ${imageName}:${imageTag}`);
-
-      // Cache the Docker image path
-      await cache.saveCache([`/tmp/${imageName}`], cacheKey);
+      const cachedImagePath = `${cachedPath}/${imageName}.tar`;
+      if (fs.existsSync(cachedImagePath)) {
+        // Load the Docker image from the cached file
+        await exec.exec(`docker load -i ${cachedImagePath}`);
+        return;
+      }
     }
 
-    // Run the Docker container
-    await exec.exec(`docker run ${imageName}:${imageTag}`);
+    // Pull the Docker image
+    await exec.exec(`docker pull ${imageName}:${imageTag}`);
+
+    // Save the Docker image to a path
+    await exec.exec(`docker save -o /tmp/${imageName}.tar ${imageName}:${imageTag}`);
+
+    // Cache the Docker image path
+    await cache.saveCache([`/tmp/${imageName}`], cacheKey);
   } catch (error) {
     core.setFailed(error.message);
   }
