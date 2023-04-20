@@ -13,7 +13,7 @@ async function run() {
 
     // Check if the Docker image is already cached
     const cachedPath = await cache.restoreCache([`/tmp/${imageName}`], cacheKey);
-    if (cachedPath.length) {
+    if (cachedPath && cachedPath.length) {
       core.info(`Using Docker image cache: ${cachedPath}`);
       return;
     }
