@@ -25,10 +25,11 @@ async function run() {
     await createDockerEnvVarFile(envVarFilePath);    
     
     // Define the Docker image name and tag
-    const imageName = 'mcr.microsoft.com/appsvc/staticappsclient';
+    const imageSrc = 'mcr.microsoft.com/appsvc/staticappsclient';
+    const imageName = 'staticappsclient';
     const imageTag = 'stable';
 
-    await loadDockerContainerFromCacheOrPullAndCache(imageName, imageTag);
+    await loadDockerContainerFromCacheOrPullAndCache(imageName, imageTag, imageSrc);
 
     await runCachedDocker(envVarFilePath);
 
@@ -154,7 +155,7 @@ async function runCachedDocker(envVarFilePath){
     ]);
 }
 
-async function loadDockerContainerFromCacheOrPullAndCache(imageName, imageTag){
+async function loadDockerContainerFromCacheOrPullAndCache(imageName, imageTag, imageSrc){
 
     // Define the Docker image cache key
     const cacheKey = `docker-${imageName}-${imageTag}`;
@@ -169,10 +170,10 @@ async function loadDockerContainerFromCacheOrPullAndCache(imageName, imageTag){
     }
     else{
         // Pull the Docker image
-        await exec.exec(`docker pull ${imageName}:${imageTag}`);
+        await exec.exec(`docker pull ${imageSrc}:${imageTag}`);
         
         // Save the Docker image to a path
-        await exec.exec(`docker save -o ${path} ${imageName}:${imageTag}`);
+        await exec.exec(`docker save -o ${path} ${imageSrc}:${imageTag}`);
 
         // Cache the Docker image path
         await cache.saveCache([path], cacheKey);
