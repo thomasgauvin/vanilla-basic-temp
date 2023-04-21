@@ -1,6 +1,8 @@
 const core = require('@actions/core');
 const exec = require('@actions/exec');
 const cache = require('@actions/cache');
+const tc = require('@actions/tool-cache');
+
 const fs = require('fs');
 const path = require('path');
 
@@ -157,27 +159,39 @@ async function runCachedDocker(envVarFilePath){
 
 async function loadDockerContainerFromCacheOrPullAndCache(imageName, imageTag, imageSrc){
 
-    // Define the Docker image cache key
-    const cacheKey = `docker-${imageName}-${imageTag}`;
-
-    // Check if the Docker image is already cached
-    const path = `/tmp/${imageName}.tar`;
-    const cachedPath = await cache.restoreCache([path], cacheKey);
-
-    if (cachedPath && cachedPath.length) {
-      core.info(`Using Docker image cache: ${cachedPath}`);
-      await exec.exec(`docker load -i ${path}`);
+    // Check if the image is already cached
+    let cachedPath = tc.find(imageName, imageTag);
+    if (cachedPath) {
+      console.log(`Using cached Docker image ${imageName}:${imageTag}`);
+    } else {
+      // If the image is not cached, pull it and save it to the cache
+      await exec.exec(`docker pull ${imageName}:${imageTag}`);
+      cachedPath = await tc.cacheDir('/var/lib/docker', imageName, imageTag);
+      console.log(`Docker image ${imageName}:${imageTag} cached`);
     }
-    else{
-        // Pull the Docker image
-        await exec.exec(`docker pull ${imageSrc}:${imageTag}`);
+
+    
+    // // Define the Docker image cache key
+    // const cacheKey = `docker-${imageName}-${imageTag}`;
+
+    // // Check if the Docker image is already cached
+    // const path = `/tmp/${imageName}.tar`;
+    // const cachedPath = await cache.restoreCache([path], cacheKey);
+
+    // if (cachedPath && cachedPath.length) {
+    //   core.info(`Using Docker image cache: ${cachedPath}`);
+    //   await exec.exec(`docker load -i ${path}`);
+    // }
+    // else{
+    //     // Pull the Docker image
+    //     await exec.exec(`docker pull ${imageSrc}:${imageTag}`);
         
-        // Save the Docker image to a path
-        await exec.exec(`docker save -o ${path} ${imageSrc}:${imageTag}`);
+    //     // Save the Docker image to a path
+    //     await exec.exec(`docker save -o ${path} ${imageSrc}:${imageTag}`);
 
-        // Cache the Docker image path
-        await cache.saveCache([path], cacheKey);
-    }
+    //     // Cache the Docker image path
+    //     await cache.saveCache([path], cacheKey);
+    // }
 }
 
 run();
