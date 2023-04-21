@@ -15,22 +15,26 @@ async function run() {
     // Check if the Docker image is already cached
     const path = `/tmp/${imageName}.tar`;
     const cachedPath = await cache.restoreCache([path], cacheKey);
+
     if (cachedPath && cachedPath.length) {
       core.info(`Using Docker image cache: ${cachedPath}`);
-      await exec.exec(`docker load -i ${cachedImagePath}`);
+      await exec.exec(`docker load -i ${cachedPath}`);
     }
     else{
         // Pull the Docker image
         await exec.exec(`docker pull ${imageName}:${imageTag}`);
+        
+        // Save the Docker image to a path
+        await exec.exec(`docker save -o ${path} ${imageName}:${imageTag}`);
+
+        // Cache the Docker image path
+        await cache.saveCache([path], cacheKey);
     }
 
+    // Run the Docker image
+    await exec.exec(`docker run ${imageName}:${imageTag}`);
 
 
-    // Save the Docker image to a path
-    await exec.exec(`docker save -o /tmp/${imageName}.tar ${imageName}:${imageTag}`);
-
-    // Cache the Docker image path
-    await cache.saveCache([`/tmp/${imageName}`], cacheKey);
   } catch (error) {
     core.setFailed(error.message);
   }
