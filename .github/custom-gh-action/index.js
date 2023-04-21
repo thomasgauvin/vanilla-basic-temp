@@ -160,14 +160,14 @@ async function runCachedDocker(envVarFilePath){
 async function loadDockerContainerFromCacheOrPullAndCache(imageName, imageTag, imageSrc){
 
     // Check if the image is already cached
-    let cachedPath = tc.find(imageName, imageTag);
+    let cachedPath = tc.find(imageSrc, imageTag);
     if (cachedPath) {
-      console.log(`Using cached Docker image ${imageName}:${imageTag}`);
+      console.log(`Using cached Docker image ${imageSrc}:${imageTag}`);
     } else {
       // If the image is not cached, pull it and save it to the cache
-      await exec.exec(`docker pull ${imageName}:${imageTag}`);
-      cachedPath = await tc.cacheDir('/var/lib/docker', imageName, imageTag);
-      console.log(`Docker image ${imageName}:${imageTag} cached`);
+      await exec.exec(`docker pull ${imageSrc}:${imageTag}`);
+      cachedPath = await tc.cacheDir('/var/lib/docker', imageSrc, imageTag);
+      console.log(`Docker image ${imageSrc}:${imageTag} cached`);
     }
 
     
