@@ -18,7 +18,7 @@ async function run() {
 
     if (cachedPath && cachedPath.length) {
       core.info(`Using Docker image cache: ${cachedPath}`);
-      await exec.exec(`docker load -i ${cachedPath}`);
+      await exec.exec(`docker load -i ${path}`);
     }
     else{
         // Pull the Docker image
