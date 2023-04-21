@@ -2,6 +2,7 @@ const core = require('@actions/core');
 const exec = require('@actions/exec');
 const cache = require('@actions/cache');
 const fs = require('fs');
+const path = require('path');
 
 const appLocationInputName = 'app_location';
 const appBuildCommandInputName = 'app_build_command';
